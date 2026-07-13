@@ -21,8 +21,8 @@ spec:
     spec:
       project: jit-hub-project
       source:
-        repoURL: 'https://github.com/hacksungboo/jit-hub-infra'
-        targetRevision: HEAD
+        repoURL: 'https://github.com/jinvelope/jit-hub-infra'
+        targetRevision: feature/monitoring
         path: charts/jit-hub-app
         helm:
           valueFiles:

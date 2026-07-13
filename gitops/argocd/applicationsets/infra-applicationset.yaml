@@ -32,8 +32,8 @@ spec:
     spec:
       project: jit-hub-project
       source:
-        repoURL: 'https://github.com/hacksungboo/jit-hub-infra'
-        targetRevision: HEAD
+        repoURL: 'https://github.com/jinvelope/jit-hub-infra'
+        targetRevision: feature/monitoring
         # charts/cloudflared, charts/monitoring-stack, charts/ops에 각각 대응
         path: charts/{{chart}}
         helm:
