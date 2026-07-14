@@ -26,7 +26,7 @@ kube-prometheus-stack:
     additionalDataSources:
       - name: Loki
         type: loki
-        url: http://monitoring-stack-loki:3100
+        url: http://onprem-monitoring-stack-loki:3100
         access: proxy
         isDefault: false
 
@@ -47,6 +47,6 @@ promtail:
   enabled: true
   config:
     clients:
-      - url: http://monitoring-stack-loki:3100/loki/api/v1/push
+      - url: http://onprem-monitoring-stack-loki:3100/loki/api/v1/push
         external_labels:
           cluster: onprem
