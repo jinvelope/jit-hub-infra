@@ -23,8 +23,19 @@ kube-prometheus-stack:
   grafana:
     enabled: true
     adminPassword: "admin"  # 운영 시 Secret으로 교체 필요
+    sidecar:
+      datasources:
+        defaultDatasourceEnabled: false
     additionalDataSources:
-      - name: Loki
+      - name: "OnPrem"
+        type: prometheus
+        uid: prometheus
+        url: http://onprem-monitoring-stack-ku-prometheus.monitoring:9090/
+        isDefault: true
+        jsonData:
+          httpMethod: POST
+          timeInterval: 30s
+      - name: "Loki"
         type: loki
         url: http://onprem-monitoring-stack-loki:3100
         access: proxy
