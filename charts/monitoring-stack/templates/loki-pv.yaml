@@ -1,0 +1,16 @@
+{{- if .Values.loki.nfs.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: loki-pv
+spec:
+  capacity:
+    storage: {{ .Values.loki.nfs.storage }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  nfs:
+    server: {{ .Values.loki.nfs.server }}
+    path: {{ .Values.loki.nfs.path }}
+{{- end }}

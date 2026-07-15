@@ -1,0 +1,16 @@
+{{- if .Values.nfs.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: auth-db-pv
+spec:
+  capacity:
+    storage: {{ .Values.db.storage }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  nfs:
+    server: {{ .Values.nfs.server }}
+    path: {{ .Values.nfs.basePath }}/auth-db
+{{- end }}

@@ -53,6 +53,15 @@ loki:
     replicas: 0
   write:
     replicas: 0
+  singleBinary:
+    persistence:
+      enabled: true
+      existingClaim: loki-pvc
+  nfs:
+    enabled: true
+    server: "192.168.0.0"        # NFS 서버 IP (실제 IP로 변경 필요)
+    path: "/data/jit-hub/loki"   # NFS 경로
+    storage: 50Gi
 
 promtail:
   enabled: true

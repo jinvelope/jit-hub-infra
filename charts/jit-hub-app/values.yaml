@@ -1,9 +1,15 @@
+nfs:
+  enabled: true
+  server: "192.168.0.0"      # NFS 서버 IP (실제 IP로 변경 필요)
+  basePath: "/data/jit-hub"  # NFS 서버의 베이스 경로
+
 auth:
   db:
     image: postgres:15-alpine
     name: auth_db
     password: postgres
     user: postgres
+    storage: 10Gi
   enabled: true
   image:
     repository: changsiuuuu/auth-service
@@ -28,6 +34,7 @@ tourist:
     name: tourist_db
     password: postgres
     user: postgres
+    storage: 10Gi
   enabled: true
   image:
     repository: changsiuuuu/tourist-service
@@ -41,6 +48,7 @@ traffic:
     name: traffic_db
     password: postgres
     user: postgres
+    storage: 10Gi
   enabled: true
   image:
     repository: changsiuuuu/traffic-service
@@ -54,6 +62,7 @@ weather:
     name: weather_db
     password: postgres
     user: postgres
+    storage: 10Gi
   enabled: true
   image:
     repository: changsiuuuu/weather-service

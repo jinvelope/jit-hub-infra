@@ -1,0 +1,15 @@
+{{- if .Values.nfs.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: traffic-db-pvc
+  namespace: {{ .Release.Namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ""
+  volumeName: traffic-db-pv
+  resources:
+    requests:
+      storage: {{ .Values.db.storage }}
+{{- end }}
