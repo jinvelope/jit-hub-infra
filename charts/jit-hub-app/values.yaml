@@ -1,0 +1,63 @@
+auth:
+  db:
+    image: postgres:15-alpine
+    name: auth_db
+    password: postgres
+    user: postgres
+  enabled: true
+  image:
+    repository: changsiuuuu/auth-service
+    tag: latest
+  replicaCount: 1
+  service:
+    port: 8001
+gateway:
+  enabled: true
+  image:
+    repository: changsiuuuu/jit-hub-gateway
+    tag: latest
+  replicaCount: 1
+  service:
+    port: 80
+ingressRule:
+  host: leechs.shop
+  namespace: jit-hub
+tourist:
+  db:
+    image: postgres:15-alpine
+    name: tourist_db
+    password: postgres
+    user: postgres
+  enabled: true
+  image:
+    repository: changsiuuuu/tourist-service
+    tag: latest
+  replicaCount: 1
+  service:
+    port: 8004
+traffic:
+  db:
+    image: postgres:15-alpine
+    name: traffic_db
+    password: postgres
+    user: postgres
+  enabled: true
+  image:
+    repository: changsiuuuu/traffic-service
+    tag: latest
+  replicaCount: 1
+  service:
+    port: 8003
+weather:
+  db:
+    image: postgres:15-alpine
+    name: weather_db
+    password: postgres
+    user: postgres
+  enabled: true
+  image:
+    repository: changsiuuuu/weather-service
+    tag: latest
+  replicaCount: 1
+  service:
+    port: 8002

@@ -1,24 +1,27 @@
 apiVersion: v2
 name: jit-hub-app
-description: JIT-HUB Umbrella Chart (App + Tunnel + Monitoring + Ops)
+description: JIT Hub Application Umbrella Chart
 type: application
 version: 0.1.0
-appVersion: "0.1.0"
-
-
-# 차트 의존성
+appVersion: "1.0.0"
 dependencies:
-  - name: cloudflared
-    version: "0.1.0"
-    repository: "file://../cloudflared"
-    condition: cloudflared.enabled
-
-  - name: monitoring-stack
-    version: "0.1.0"
-    repository: "file://../monitoring-stack"
-    condition: monitoring-stack.enabled
-
-  - name: ops
-    version: "0.1.0"
-    repository: "file://../ops"
-    condition: ops.enabled
+  - name: gateway
+    version: 0.1.0
+    repository: "file://charts/gateway"
+    condition: gateway.enabled
+  - name: auth
+    version: 0.1.0
+    repository: "file://charts/auth"
+    condition: auth.enabled
+  - name: weather
+    version: 0.1.0
+    repository: "file://charts/weather"
+    condition: weather.enabled
+  - name: traffic
+    version: 0.1.0
+    repository: "file://charts/traffic"
+    condition: traffic.enabled
+  - name: tourist
+    version: 0.1.0
+    repository: "file://charts/tourist"
+    condition: tourist.enabled

@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-ingress-rule
+  namespace: {{ .Values.ingressRule.namespace | default "default" }}
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: {{ .Values.ingressRule.host }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend: 
+          service:
+            name: gateway-service
+            port:
+              number: {{ .Values.gateway.service.port }}

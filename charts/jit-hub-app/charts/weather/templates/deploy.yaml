@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-service
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: weather
+  template:
+    metadata:
+      labels:
+        app: weather
+    spec:
+      containers:
+      - name: weather
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.service.port }}
+        env:
+        - name: JITHUB_DATABASE_URL
+          value: "postgresql://{{ .Values.db.user }}:{{ .Values.db.password }}@weather-db:5432/{{ .Values.db.name }}"
+        - name: JITHUB_AUTH_SERVICE_URL
+          value: "http://auth-service:8001"
