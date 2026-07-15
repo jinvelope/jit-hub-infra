@@ -1,8 +1,8 @@
 global:
   nfs:
     enabled: true
-    server: "192.168.0.0"      # NFS ?úÎ≤Ñ IP (?§Ï†ú IPÎ°?Î≥ÄÍ≤??ÑÏöî)
-    basePath: "/data/jit-hub"  # NFS ?úÎ≤Ñ??Î≤†Ïù¥??Í≤ΩÎ°ú
+    server: "192.168.0.0"
+    basePath: "/data/jit-hub"
 
 auth:
   db:
@@ -18,6 +18,7 @@ auth:
   replicaCount: 1
   service:
     port: 8001
+
 gateway:
   enabled: true
   image:
@@ -25,10 +26,13 @@ gateway:
     tag: latest
   replicaCount: 1
   service:
+    type: ClusterIP
     port: 80
+
 ingressRule:
   host: leechs.shop
   namespace: jit-hub
+
 tourist:
   db:
     image: postgres:15-alpine
@@ -43,6 +47,7 @@ tourist:
   replicaCount: 1
   service:
     port: 8004
+
 traffic:
   db:
     image: postgres:15-alpine
@@ -57,6 +62,7 @@ traffic:
   replicaCount: 1
   service:
     port: 8003
+
 weather:
   db:
     image: postgres:15-alpine
