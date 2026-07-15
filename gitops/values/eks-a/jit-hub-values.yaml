@@ -1,4 +1,8 @@
 # gitops/values/eks-a/jit-hub-values.yaml
+gateway:
+  service:
+    type: LoadBalancer  # AWS NLB 자동 생성
+
 jit-hub-app:
   replicaCount: 3
   resources:
