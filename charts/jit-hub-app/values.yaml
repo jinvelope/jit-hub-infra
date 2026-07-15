@@ -1,7 +1,8 @@
-nfs:
-  enabled: true
-  server: "192.168.0.0"      # NFS 서버 IP (실제 IP로 변경 필요)
-  basePath: "/data/jit-hub"  # NFS 서버의 베이스 경로
+global:
+  nfs:
+    enabled: true
+    server: "192.168.0.0"      # NFS ?�버 IP (?�제 IP�?변�??�요)
+    basePath: "/data/jit-hub"  # NFS ?�버??베이??경로
 
 auth:
   db:

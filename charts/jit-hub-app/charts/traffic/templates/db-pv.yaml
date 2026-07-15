@@ -1,4 +1,4 @@
-{{- if .Values.nfs.enabled }}
+{{- if .Values.global.nfs.enabled }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -11,6 +11,6 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
   nfs:
-    server: {{ .Values.nfs.server }}
-    path: {{ .Values.nfs.basePath }}/traffic-db
+    server: {{ .Values.global.nfs.server }}
+    path: {{ .Values.global.nfs.basePath }}/traffic-db
 {{- end }}

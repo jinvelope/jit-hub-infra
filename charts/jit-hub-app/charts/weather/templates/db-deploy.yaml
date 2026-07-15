@@ -26,12 +26,12 @@ spec:
           value: /var/lib/postgresql/data/pgdata
         ports:
         - containerPort: 5432
-        {{- if .Values.nfs.enabled }}
+        {{- if .Values.global.nfs.enabled }}
         volumeMounts:
         - name: postgres-data
           mountPath: /var/lib/postgresql/data
         {{- end }}
-      {{- if .Values.nfs.enabled }}
+      {{- if .Values.global.nfs.enabled }}
       volumes:
       - name: postgres-data
         persistentVolumeClaim:
