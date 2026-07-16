@@ -65,5 +65,5 @@ data "terraform_remote_state" "eks" {
 provider "kubernetes" {
   alias          = "onprem"
   config_path    = "~/.kube/config"
-  config_context = "kubernetes-admin@kubernetes"
+  config_context = "docker-desktop"
 }

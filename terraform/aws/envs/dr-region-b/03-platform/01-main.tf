@@ -69,22 +69,22 @@ resource "kubernetes_secret" "argocd_manager_token" {
   type = "kubernetes.io/service-account-token"
 }
 
-# 온프레미스 Argo CD 클러스터에 EKS-A 클러스터 등록용 Secret 생성 (kubernetes.onprem 프로바이더 별칭 사용)
-resource "kubernetes_secret" "eks_a_cluster_secret" {
+# 온프레미스 Argo CD 클러스터에 EKS-B 클러스터 등록용 Secret 생성 (kubernetes.onprem 프로바이더 별칭 사용)
+resource "kubernetes_secret" "eks_b_cluster_secret" {
   provider = kubernetes.onprem
   metadata {
-    name      = "cluster-eks-a"
+    name      = "cluster-eks-b"
     namespace = "argocd"
     labels = {
       "argocd.argoproj.io/secret-type" = "cluster"
-      "environment"                    = "eks-a"
+      "environment"                    = "eks-b"
       "cloud-provider"                 = "aws"
       "status"                         = "active"
     }
   }
-  
+
   data = {
-    name   = "eks-a"
+    name   = "eks-b"
     server = data.terraform_remote_state.eks.outputs.cluster_endpoint
     config = jsonencode({
       bearerToken = kubernetes_secret.argocd_manager_token.data["token"]
