@@ -72,3 +72,10 @@ loki:
 # 로그 수집기 - 모든 클러스터에서 활성화
 promtail:
   enabled: true
+
+# EKS 클러스터들의 remote_write/promtail 수신용 Ingress - 온프레미스에서만 활성화
+ingestIngress:
+  enabled: false
+  domain: ""
+  prometheusServiceName: ""
+  lokiServiceName: ""

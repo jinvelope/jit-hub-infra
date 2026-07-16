@@ -9,26 +9,9 @@ kube-prometheus-stack:
       # 중앙 Prometheus 수신 시 클러스터 구분용 레이블
       externalLabels:
         cluster: eks-a
-      # 온프레미스 중앙 Prometheus로 메트릭 전송 (Cloudflare Tunnel 경유) - 도메인 세팅 후 활성화
-      # remoteWrite:
-      #   - url: "https://prometheus-ingest.jit-hub-domain.com/api/v1/write"
-
-  # 테스트용 임시 활성화 (운영 시 비활성 - 온프레 Grafana 통합 모니터링)
-  grafana:
-    enabled: true
-    adminPassword: "admin"
-    sidecar:
-      datasources:
-        defaultDatasourceEnabled: false
-    additionalDataSources:
-      - name: "EKS-A"
-        type: prometheus
-        uid: prometheus
-        url: http://eks-a-monitoring-stack-kub-prometheus.monitoring:9090/
-        isDefault: true
-        jsonData:
-          httpMethod: POST
-          timeInterval: 30s
+      # 온프레미스 중앙 Prometheus로 메트릭 전송 (Cloudflare Tunnel 경유)
+      remoteWrite:
+        - url: "https://prometheus-ingest.leechs.shop/api/v1/write"
 
   alertmanager:
     enabled: false
@@ -40,7 +23,7 @@ promtail:
   enabled: true
   config:
     clients:
-      # 온프레미스 중앙 Loki로 로그 전송 (Cloudflare Tunnel 경유) - 도메인 세팅 후 활성화
-      - url: "http://localhost:3100/loki/api/v1/push"
+      # 온프레미스 중앙 Loki로 로그 전송 (Cloudflare Tunnel 경유)
+      - url: "https://loki-ingest.leechs.shop/loki/api/v1/push"
         external_labels:
           cluster: eks-a

@@ -1,8 +1,6 @@
-# k8s/monitoring-ingress.yaml
-# EKS 클러스터들이 remote_write/push로 보내는 메트릭/로그를 수신하는 Ingress
-
+{{- if .Values.ingestIngress.enabled }}
+# EKS 클러스터들이 remote_write/push로 보내는 메트릭/로그를 수신하는 Ingress (onprem 전용)
 ---
-# Prometheus remote_write 수신 엔드포인트
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -15,19 +13,18 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: prometheus-ingest.leechs.shop
+    - host: prometheus-ingest.{{ .Values.ingestIngress.domain }}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: monitoring-stack-kube-prometheus-stack-prometheus
+                name: {{ .Values.ingestIngress.prometheusServiceName }}
                 port:
                   number: 9090
 
 ---
-# Loki 로그 수신 엔드포인트
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -40,13 +37,14 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: loki-ingest.leechs.shop
+    - host: loki-ingest.{{ .Values.ingestIngress.domain }}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: monitoring-stack-loki
+                name: {{ .Values.ingestIngress.lokiServiceName }}
                 port:
                   number: 3100
+{{- end }}

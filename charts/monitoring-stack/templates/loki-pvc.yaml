@@ -1,4 +1,4 @@
-{{- if .Values.loki.nfs.enabled }}
+{{- if and .Values.loki.nfs .Values.loki.nfs.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
