@@ -37,6 +37,7 @@ kube-prometheus-stack:
           timeInterval: 30s
       - name: "Loki"
         type: loki
+        uid: loki
         url: http://onprem-monitoring-stack-loki:3100
         access: proxy
         isDefault: false
@@ -74,6 +75,6 @@ promtail:
 # EKS 클러스터들의 remote_write/promtail을 받는 Ingress
 ingestIngress:
   enabled: true
-  domain: leechs.shop
+  domain: unzipp.cloud
   prometheusServiceName: onprem-monitoring-stack-ku-prometheus
   lokiServiceName: onprem-monitoring-stack-loki

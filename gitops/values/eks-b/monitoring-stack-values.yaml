@@ -9,7 +9,7 @@ kube-prometheus-stack:
       externalLabels:
         cluster: eks-b
       remoteWrite:
-        - url: "https://prometheus-ingest.leechs.shop/api/v1/write"
+        - url: "https://prometheus-ingest.unzipp.cloud/api/v1/write"
 
   grafana:
     enabled: false
@@ -24,6 +24,6 @@ promtail:
   enabled: true
   config:
     clients:
-      - url: "https://loki-ingest.leechs.shop/loki/api/v1/push"
+      - url: "https://loki-ingest.unzipp.cloud/loki/api/v1/push"
         external_labels:
           cluster: eks-b

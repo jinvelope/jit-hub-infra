@@ -30,7 +30,7 @@ gateway:
     port: 80
 
 ingressRule:
-  host: leechs.shop
+  host: unzipp.cloud
   namespace: jit-hub
 
 tourist:

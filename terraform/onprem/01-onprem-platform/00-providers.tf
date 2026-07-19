@@ -60,6 +60,6 @@ variable "cloudflare_account_id" {
 }
 
 variable "domain_name" {
-  description = "연결할 외부 도메인 (leechs.shop)"
+  description = "연결할 외부 도메인 (unzipp.cloud)"
   type        = string
 }
