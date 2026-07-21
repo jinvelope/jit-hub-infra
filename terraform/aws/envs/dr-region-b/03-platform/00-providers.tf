@@ -67,3 +67,11 @@ provider "kubernetes" {
   config_path    = "~/.kube/config"
   config_context = "kubernetes-admin@kubernetes"
 }
+
+data "terraform_remote_state" "onprem" {
+  backend = "local"
+
+  config = {
+    path = "../../../../onprem/01-onprem-platform/terraform.tfstate"
+  }
+}
