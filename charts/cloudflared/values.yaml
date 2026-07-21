@@ -1,0 +1,12 @@
+# charts/cloudflared/values.yaml
+# 각 클러스터의 실제 값은 gitops/values/{env}/cloudflared-values.yaml 에서 덮어씀
+
+replicaCount: 1
+
+# terraform(shared/modules/cloudflare-prod)이 미리 만들어둔 Secret 이름
+# (kubernetes_secret.cloudflared_token, key: token)
+credentialsSecret: cloudflared-token
+
+image:
+  repository: cloudflare/cloudflared
+  tag: "2024.11.0"

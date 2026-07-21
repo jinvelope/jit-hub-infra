@@ -29,6 +29,30 @@ module "tailscale" {
 }
 
 # ---------------------------------------------------------
+# 5. Ingress-Nginx 설치 (eks-a)
+# ---------------------------------------------------------
+module "ingress_nginx" {
+  source = "../../../../shared/modules/ingress-nginx"
+
+  namespace     = "ingress-nginx"
+  service_type  = "LoadBalancer"   # eks-a는 클라우드 LB 사용
+  replica_count = 2
+}
+
+# ---------------------------------------------------------
+# 6. Cloudflared 접속용 Secret 생성 (eks-a)
+#    ⚠ Tunnel은 여기서 만들지 않음 — onprem에서 생성된 것을 재사용
+#    ⚠ Deployment는 charts/cloudflared(Helm/ArgoCD, gitops/values/eks-a/cloudflared-values.yaml)가 담당
+# ---------------------------------------------------------
+module "cloudflared_connector" {
+  source = "../../../../shared/modules/cloudflare-prod"
+
+  namespace    = "cloudflared"
+  secret_name  = "cloudflared-token"
+  tunnel_token = data.terraform_remote_state.onprem.outputs.tunnel_token
+}
+
+# ---------------------------------------------------------
 # Argo CD에 EKS 클러스터 등록 (Bearer Token 기반 선언적 연동)
 # ---------------------------------------------------------
 

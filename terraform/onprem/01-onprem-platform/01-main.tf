@@ -1,88 +1,45 @@
-# --- 1. Tunnel Secret 생성 -------------------------------------------
-resource "random_password" "tunnel_secret" {
-  length  = 64
-  special = false
-}
+# -------------------------------------------------------------------------------
+# 1. Cloudflare Tunnel (전체 프로젝트 유일 — eks-a/onprem/eks-b 공용 multi origin)
+# -------------------------------------------------------------------------------
+module "cloudflared_tunnel" {
+  source = "../../shared/modules/cloudflared"
 
-# --- 2. Cloudflare Tunnel 본체 생성 -----------------------------------
-resource "cloudflare_tunnel" "vmware_tunnel" {
-  account_id = var.cloudflare_account_id
-  name       = "vmware-local-tunnel"
-  secret     = base64encode(random_password.tunnel_secret.result)
-}
+  cloudflare_account_id = var.cloudflare_account_id
+  cloudflare_zone_id    = var.cloudflare_zone_id
+  tunnel_name             = "jit-hub-tunnel"
+  domain_name              = var.domain_name
+  dns_records              = ["@", "argocd", "grafana"]
 
-# --- 3. DNS CNAME 레코드 생성 -----------------------------------------
-resource "cloudflare_record" "vmware_dns" {
-  zone_id = var.cloudflare_zone_id
-  name    = "@"
-  content = "${cloudflare_tunnel.vmware_tunnel.id}.cfargotunnel.com"
-  type    = "CNAME"
-  proxied = true
-}
-
-# 모니터링 수집용 서브도메인 DNS 레코드
-resource "cloudflare_record" "prometheus_ingest_dns" {
-  zone_id = var.cloudflare_zone_id
-  name    = "prometheus-ingest"
-  content = "${cloudflare_tunnel.vmware_tunnel.id}.cfargotunnel.com"
-  type    = "CNAME"
-  proxied = true
-}
-
-resource "cloudflare_record" "loki_ingest_dns" {
-  zone_id = var.cloudflare_zone_id
-  name    = "loki-ingest"
-  content = "${cloudflare_tunnel.vmware_tunnel.id}.cfargotunnel.com"
-  type    = "CNAME"
-  proxied = true
-}
-
-# --- 4. Tunnel 라우팅 규칙 (Ingress Controller 매핑) -------------------
-resource "cloudflare_tunnel_config" "vmware_config" {
-  account_id = cloudflare_tunnel.vmware_tunnel.account_id
-  tunnel_id  = cloudflare_tunnel.vmware_tunnel.id
-
-  config {
-    # EKS → 온프레미스 Prometheus remote_write 수신
-    ingress_rule {
-      hostname = "prometheus-ingest.${var.domain_name}"
-      service  = "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local:80"
-    }
-    # EKS → 온프레미스 Loki 로그 수신
-    ingress_rule {
-      hostname = "loki-ingest.${var.domain_name}"
-      service  = "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local:80"
-    }
-    # 메인 앱 트래픽
-    ingress_rule {
+  ingress_rules = [
+    # 서비스 트래픽 (평시 eks-a, 장애시 onprem, DR시 eks-b — 오리진은 replica로 스위칭)
+    {
       hostname = var.domain_name
       service  = "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local:80"
+    },
+    # 관제용 (onprem 고정)
+    {
+      hostname = "argocd.${var.domain_name}"
+      service  = "https://argocd-server.argocd.svc.cluster.local:443"
+    },
+    {
+      hostname = "grafana.${var.domain_name}"
+      service  = "http://grafana.monitoring.svc.cluster.local:80"
     }
-    ingress_rule {
-      service = "http_status:404"
-    }
-  }
+  ]
 }
 
-# --- 5. null_resource를 통한 Ansible 실행 (cloudflared 파드 기동) ------
-resource "null_resource" "install_cloudflared_pod" {
-  depends_on = [
-    cloudflare_tunnel_config.vmware_config,
-    cloudflare_record.vmware_dns
-  ]
-  
-  triggers = {
-    always_run = "${timestamp()}"
-  }
+# -------------------------------------------------------------------------------
+# 2. Cloudflared 접속용 Secret 생성 (onprem 자체)
+#    Deployment는 charts/cloudflared(Helm/ArgoCD, gitops/values/onprem/cloudflared-values.yaml)가 담당
+# -------------------------------------------------------------------------------
+module "cloudflared_connector" {
+  source = "../../shared/modules/cloudflare-prod"
 
-  provisioner "local-exec" {
-    command = "ansible-playbook -i localhost, -c local ${path.module}/playbook-kubectl.yml --extra-vars 'tunnel_token=${cloudflare_tunnel.vmware_tunnel.tunnel_token}'"
-  }
+  namespace    = "cloudflared"
+  secret_name  = "cloudflared-token"
+  tunnel_token = module.cloudflared_tunnel.tunnel_token
 
-  provisioner "local-exec" {
-    when    = destroy
-    command = "kubectl delete -f ${path.module}/deploy-cloudflared.yaml && kubectl delete secret tunnel-credentials --ignore-not-found=true"
-  }
+  depends_on = [module.cloudflared_tunnel]
 }
 
 # -------------------------------------------------------------------------------

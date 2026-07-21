@@ -1,7 +1,3 @@
 # gitops/values/eks-b/cloudflared-values.yaml
 replicaCount: 0 # 평상시 Cold Standby 상태로 터널 비활성화 (DR Failover 발생 시 1로 승격)
-tunnelId: "xxxx-xxxx-xxxx-xxxx"
-credentialsSecret: "cloudflared-creds"
-ingress:
-  - hostname: "jit-hub.domain.com"
-    service: http://nginx-service.jit-hub.svc.cluster.local:80
+credentialsSecret: "cloudflared-token"
