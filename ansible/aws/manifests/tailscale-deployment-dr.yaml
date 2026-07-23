@@ -1,11 +1,10 @@
 # tailscale-deployment.yaml 파일
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: tailscale-router
   namespace: tailscale
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: tailscale
@@ -15,6 +14,10 @@ spec:
         app: tailscale
     spec:
       serviceAccountName: tailscale-sa
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      tolerations:
+        - operator: Exists
       containers:
       - name: tailscale
         image: tailscale/tailscale:latest
@@ -24,29 +27,69 @@ spec:
             secretKeyRef:
               name: tailscale-auth
               key: TS_AUTHKEY
-
-        # - name: TS_ROUTES
-        #   value: "10.0.0.0/16,172.20.0.0/16"
-
-        # - name: TS_EXTRA_ARGS
-        #   value: "--advertise-routes=10.0.0.0/16,172.20.0.0/16"
-
+        # NODE_NAME을 먼저 정의해야 아래에서 $(NODE_NAME) 치환됨
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: TS_STATE_DIR
+          value: "/var/lib/tailscale"
+        # 노드마다 고유 hostname
+        - name: TS_HOSTNAME
+          value: "dr-router-$(NODE_NAME)"
         - name: TS_EXTRA_ARGS
-          value: "--advertise-tags=tag:dr-subnet-router --advertise-routes=10.10.0.0/16,172.30.0.0/16"
-          
+          value: "--advertise-tags=tag:dr-subnet-router --advertise-routes=10.10.0.0/16,172.30.0.0/16 --accept-routes"
         - name: TS_USERSPACE
           value: "false"
-        
+
         securityContext:
           capabilities:
             add:
             - NET_ADMIN
-        
+
+        lifecycle:
+          postStart:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  for i in $(seq 1 60); do
+                    ip link show tailscale0 >/dev/null 2>&1 && break
+                    sleep 1
+                  done
+                  if ! ip link show tailscale0 >/dev/null 2>&1; then
+                    echo "tailscale0 interface did not come up within 60s, skipping route setup (will retry via readiness)"
+                    exit 0
+                  fi
+                  ip route replace 172.16.8.0/24 dev tailscale0
+                  iptables -t nat -C POSTROUTING -d 172.16.8.0/24 -o tailscale0 -j MASQUERADE 2>/dev/null || \
+                  iptables -t nat -A POSTROUTING -d 172.16.8.0/24 -o tailscale0 -j MASQUERADE
+
+        readinessProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - |
+                ip link show tailscale0 >/dev/null 2>&1 || exit 1
+                ip route show 172.16.8.0/24 dev tailscale0 >/dev/null 2>&1 || \
+                  ip route replace 172.16.8.0/24 dev tailscale0
+                iptables -t nat -C POSTROUTING -d 172.16.8.0/24 -o tailscale0 -j MASQUERADE 2>/dev/null || \
+                  iptables -t nat -A POSTROUTING -d 172.16.8.0/24 -o tailscale0 -j MASQUERADE
+          initialDelaySeconds: 5
+          periodSeconds: 15
+
         volumeMounts:
         - name: tun
           mountPath: /dev/net/tun
-      
+        - name: tsstate
+          mountPath: /var/lib/tailscale
       volumes:
       - name: tun
         hostPath:
           path: /dev/net/tun
+      - name: tsstate
+        hostPath:
+          path: /var/lib/tailscale-router
+          type: DirectoryOrCreate
