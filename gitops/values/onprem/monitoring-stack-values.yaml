@@ -5,6 +5,10 @@ kube-prometheus-stack:
   enabled: true
 
   prometheus:
+    service:
+      type: LoadBalancer
+      port: 9090
+      loadBalancerIP: 172.16.8.32
     prometheusSpec:
       externalLabels:
         cluster: onprem
@@ -23,6 +27,10 @@ kube-prometheus-stack:
   grafana:
     enabled: true
     adminPassword: "admin"  # 운영 시 Secret으로 교체 필요
+    service:
+      type: LoadBalancer
+      port: 80
+      loadBalancerIP: 172.16.8.33
     sidecar:
       datasources:
         defaultDatasourceEnabled: false
@@ -48,6 +56,10 @@ kube-prometheus-stack:
 loki:
   enabled: true
   deploymentMode: SingleBinary
+  chunksCache:
+    enabled: false
+  resultsCache:
+    enabled: false
   backend:
     replicas: 0
   read:
@@ -55,6 +67,7 @@ loki:
   write:
     replicas: 0
   singleBinary:
+    replicas: 1
     persistence:
       enabled: true
       existingClaim: loki-pvc
@@ -63,6 +76,10 @@ loki:
     server: "172.16.8.203"        # NFS 서버 IP (실제 IP로 변경 필요)
     path: "/nfs/shared/jithub-loki"   # NFS 경로
     storage: 50Gi
+
+lokiLoadBalancer:
+  enabled: true
+  ip: 172.16.8.34
 
 promtail:
   enabled: true
@@ -73,8 +90,9 @@ promtail:
           cluster: onprem
 
 # EKS 클러스터들의 remote_write/promtail을 받는 Ingress
+# (MetalLB 직접 IP 방식으로 전환하면서 더 이상 실제로 쓰이지 않음 — 레거시로 유지)
 ingestIngress:
   enabled: true
-  domain: unzipp.cloud
+  domain: ccmall.shop
   prometheusServiceName: onprem-monitoring-stack-ku-prometheus
   lokiServiceName: onprem-monitoring-stack-loki

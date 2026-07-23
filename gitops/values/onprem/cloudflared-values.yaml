@@ -1,5 +1,5 @@
 # gitops/values/onprem/cloudflared-values.yaml
-replicaCount: 1 # On-Prem 테스트를 위해 Active로 스위칭
+replicaCount: 0 # 평시 standby — 모니터링은 MetalLB+Tailscale로 접근하므로 Active 전환 불필요
 tunnelId: "xxxx-xxxx-xxxx-xxxx"
 credentialsSecret: "cloudflared-creds"
 ingress:

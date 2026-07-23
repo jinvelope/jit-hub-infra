@@ -1,0 +1,18 @@
+# charts/monitoring-stack/templates/loki-lb-service.yaml
+{{- if .Values.lokiLoadBalancer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki-lb
+  namespace: monitoring
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.lokiLoadBalancer.ip }}
+  selector:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: single-binary   # SingleBinary Pod 셀렉터
+  ports:
+    - name: http
+      port: 3100
+      targetPort: 3100
+{{- end }}
