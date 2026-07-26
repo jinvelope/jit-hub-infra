@@ -27,7 +27,7 @@ gateway:
   service:
     port: 80
 ingressRule:
-  host: leechs.shop
+  host: ccmall.shop
   namespace: jit-hub
 tourist:
   db:
@@ -89,3 +89,25 @@ weather:
   replicaCount: 1
   service:
     port: 8002
+sllm:
+  enabled: true
+  image:
+    repository: kimyujin1346/sllm-service
+    tag: latest
+  replicaCount: 1
+  service:
+    port: 8005
+  location: "EKS"
+  loki:
+    mode: mock
+    url: "http://onprem-monitoring-stack-loki:3100"
+    query: '{cluster=~".+"}'
+  ollama:
+    image: ollama/ollama:0.31.2
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        cpu: "1"
+        memory: "2Gi"

@@ -1,0 +1,25 @@
+{{- if and .Values.enabled .Values.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pod-failure-alerts
+  labels:
+    release: onprem-monitoring-stack
+spec:
+  groups:
+    - name: pod-failures
+      rules:
+        - alert: OOMKilled
+          expr: kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{`{{ $labels.pod }}`}} ({{`{{ $labels.namespace }}`}}) OOMKilled"
+        - alert: DiskPressure
+          expr: kube_node_status_condition{condition="DiskPressure", status="true"} == 1
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node {{`{{ $labels.node }}`}} under DiskPressure"
+{{- end }}

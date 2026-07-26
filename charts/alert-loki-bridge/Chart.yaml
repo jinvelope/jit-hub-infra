@@ -1,0 +1,6 @@
+apiVersion: v2
+name: alert-loki-bridge
+description: Alertmanager webhook -> Loki push 브릿지 (OOMKilled/DiskPressure 등 메트릭 기반 장애를 Loki 로그로 정규화)
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

@@ -11,7 +11,8 @@ kube-prometheus-stack:
         cluster: eks-a
       # 온프레미스 중앙 Prometheus로 메트릭 전송 (Cloudflare Tunnel 경유)
       remoteWrite:
-        - url: "https://prometheus-ingest.unzipp.cloud/api/v1/write"
+#        - url: "https://prometheus-ingest.ccmall.shop/api/v1/write"
+        - url: "http://172.16.8.32:9090/api/v1/write"
 
   alertmanager:
     enabled: false
@@ -19,11 +20,35 @@ kube-prometheus-stack:
 loki:
   enabled: false
 
+lokiLoadBalancer:
+  enabled: false
+
 promtail:
   enabled: true
   config:
     clients:
       # 온프레미스 중앙 Loki로 로그 전송 (Cloudflare Tunnel 경유)
-      - url: "https://loki-ingest.unzipp.cloud/loki/api/v1/push"
+#      - url: "https://loki-ingest.ccmall.shop/loki/api/v1/push"
+      - url: "http://172.16.8.34:3100/loki/api/v1/push"
         external_labels:
           cluster: eks-a
+    snippets:
+      scrapeConfigs: |
+        - job_name: jithub-log-only
+          static_configs:
+            - targets:
+                - localhost
+              labels:
+                job: jithub-log-only
+                __path__: /var/log/jithub/*.log
+
+  extraVolumes:
+    - name: jithub-logs
+      hostPath:
+        path: /var/log/jithub
+        type: DirectoryOrCreate
+
+  extraVolumeMounts:
+    - name: jithub-logs
+      mountPath: /var/log/jithub
+      readOnly: true

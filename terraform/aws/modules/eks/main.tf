@@ -16,7 +16,15 @@ module "eks" {
   cluster_addons = {
     coredns    = {}
     kube-proxy = {}
-    vpc-cni    = {}
+    # Pod가 온프렘(172.16.8.0/24) / tailscale CGNAT(100.64.0.0/10)로 가는 트래픽은
+    # AWS VPC CNI가 SNAT 하지 않도록 제외 → tailscale0 라우팅이 정상 동작
+    vpc-cni = {
+      configuration_values = jsonencode({
+        env = {
+          AWS_VPC_K8S_CNI_EXCLUDE_SNAT_CIDRS = "172.16.8.0/24,100.64.0.0/10"
+        }
+      })
+    }
   }
 
   node_security_group_additional_rules = merge(

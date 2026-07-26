@@ -1,2 +1,6 @@
-# DR 테스트 전에는 gateway를 만들지 않습니다. EKS-B JIT 전환 시 true로 변경합니다.
-enabled: false
+enabled: true
+replicaCount: 1
+
+# 임시 진단: Tailscale egress가 확인된 10.0.1.0/24 (ap-northeast-1a) 노드에 고정
+nodeSelector:
+  topology.kubernetes.io/zone: ap-northeast-1a

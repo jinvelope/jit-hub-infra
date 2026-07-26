@@ -21,3 +21,17 @@ variable "cloudflare_zone_id" {
 variable "domain_name" {
   type = string
 }
+
+variable "harbor_robot_user" {
+  type      = string
+  sensitive = true
+}
+
+variable "harbor_robot_pull_token" {
+  type      = string
+  sensitive = true
+}
+
+variable "harbor_registry_server" {
+  type    = string
+}

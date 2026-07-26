@@ -15,7 +15,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: prometheus-ingest.ccmall.shop
+    - host: prometheus-ingest.leechs.shop
       http:
         paths:
           - path: /
@@ -40,7 +40,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: loki-ingest.ccmall.shop
+    - host: loki-ingest.leechs.shop
       http:
         paths:
           - path: /

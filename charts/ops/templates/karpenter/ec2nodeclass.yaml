@@ -1,5 +1,6 @@
 
-# EC2NodeClass: AWS 레벨에서 EC2를 어떻게 만들지 정의
+# EC2NodeClass: AWS 레벨에서 EC2를 어떻게 만들지 정의\
+{{- if .Values.karpenter.enabled }} 
 apiVersion: karpenter.k8s.aws/v1beta1
 kind: EC2NodeClass
 metadata:
@@ -36,3 +37,4 @@ spec:
         volumeSize: {{ .Values.karpenter.ebs.volumeSize | default "100Gi" }}
         volumeType: {{ .Values.karpenter.ebs.volumeType | default "gp3" }}
         deleteOnTermination: true
+{{- end }}

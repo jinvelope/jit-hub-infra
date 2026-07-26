@@ -1,11 +1,10 @@
 # tailscale-deployment.yaml 파일
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: tailscale-router
   namespace: tailscale
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: tailscale
@@ -15,37 +14,76 @@ spec:
         app: tailscale
     spec:
       serviceAccountName: tailscale-sa
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      tolerations:
+        - operator: Exists
       containers:
       - name: tailscale
         image: tailscale/tailscale:latest
         env:
+        # NODE_NAME을 먼저 정의해야 아래에서 $(NODE_NAME) 치환됨
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
         - name: TS_AUTHKEY
           valueFrom:
             secretKeyRef:
               name: tailscale-auth
               key: TS_AUTHKEY
-
-        # - name: TS_ROUTES
-        #   value: "10.0.0.0/16,172.20.0.0/16"
-
-        # - name: TS_EXTRA_ARGS
-        #   value: "--advertise-routes=10.0.0.0/16,172.20.0.0/16"
-
+        # state를 노드 디스크(hostPath)가 아니라 "노드별 K8s Secret"에 저장
+        # → destroy 시 secret도 함께 정리되고, 노드마다 고유하여 Duplicate node key 방지
+        - name: TS_KUBE_SECRET
+          value: "tailscale-$(NODE_NAME)"
+        # subnet router 광고(구조 유지) + 노드별 고유 hostname + accept-routes
         - name: TS_EXTRA_ARGS
-          value: "--advertise-tags=tag:dr-subnet-router --advertise-routes=10.10.0.0/16,172.30.0.0/16"
-          
+          value: "--reset --advertise-tags=tag:dr-subnet-router --accept-routes --hostname=dr-router-$(NODE_NAME)"
         - name: TS_USERSPACE
           value: "false"
-        
         securityContext:
           capabilities:
             add:
             - NET_ADMIN
-        
+            - NET_RAW
+        lifecycle:
+          postStart:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+
+                  # 최대 30초 대기 (tailscale0 인터페이스 생성 대기)
+                  for i in $(seq 1 60); do
+                    ip link show tailscale0 >/dev/null 2>&1 && break
+                    sleep 0.5
+                  done
+
+                  # tailscale이 만든 라우팅 테이블(52)로 온프렘 대역을 우선 조회 (중복 시 스킵)
+                  ip rule show | grep -q "172.16.8.0/24" || ip rule add to 172.16.8.0/24 lookup 52 pref 100
+
+                  # tailscale0로 나가는 트래픽 SNAT (중복 방지 -C 검증 후 삽입)
+                  iptables -t nat -C POSTROUTING -o tailscale0 -j MASQUERADE >/dev/null 2>&1 \
+                    || iptables -t nat -A POSTROUTING -o tailscale0 -j MASQUERADE
+
+                  echo "Routing configured successfully" > /tmp/routing-ready
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - |
+              # 라우팅 룰과 iptables 룰이 실제로 적용되었는지 둘 다 검증
+              ip rule show | grep -q "172.16.8.0/24" && \
+              iptables -t nat -C POSTROUTING -o tailscale0 -j MASQUERADE >/dev/null 2>&1
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
         volumeMounts:
         - name: tun
           mountPath: /dev/net/tun
-      
       volumes:
       - name: tun
         hostPath:

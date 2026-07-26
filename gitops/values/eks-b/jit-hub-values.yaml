@@ -1,24 +1,47 @@
 # gitops/values/eks-b/jit-hub-values.yaml
 # 평시 Cold Standby입니다. JIT 전환 시 replicaCount를 올리고 gateway도 활성화합니다.
+
+ingressRule:
+  namespace: "jit-hub"
+  host: "ccmall.shop" # 필요시 eks-a 전용 도메인으로 변경 가능
 gateway:
-  replicaCount: 1
+  replicaCount: 0
+  image:
+    repository: "harbor.ccmall.shop/jit-hub/jit-hub-gateway"
+    tag: "seed"
 auth:
-  replicaCount: 1
+  replicaCount: 0
+  image:
+    repository: "harbor.ccmall.shop/jit-hub/auth-service"
+    tag: "seed"
   db:
-    enabled: true
+    enabled: false
     host: "postgres-gateway"
 weather:
-  replicaCount: 1
+  replicaCount: 0
+  image:
+    repository: "harbor.ccmall.shop/jit-hub/weather-service"
+    tag: "seed"
   db:
-    enabled: true
+    enabled: false
     host: "postgres-gateway"
 traffic:
-  replicaCount: 1
+  replicaCount: 0
+  image:
+    repository: "harbor.ccmall.shop/jit-hub/traffic-service"
+    tag: "seed"
   db:
-    enabled: true
+    enabled: false
     host: "postgres-gateway"
 tourist:
-  replicaCount: 1
+  replicaCount: 0
+  image:
+    repository: "harbor.ccmall.shop/jit-hub/tourist-service"
+    tag: "seed"
   db:
-    enabled: true
+    enabled: false
     host: "postgres-gateway"
+
+# sLLM 분석 파이프라인(FastAPI+Ollama+poller)은 onprem에만 배포 (7/15 팀 결정)
+sllm:
+  enabled: false

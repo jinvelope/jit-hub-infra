@@ -24,6 +24,8 @@ spec:
                 #   namespace: kube-system
                 - chart: monitoring-stack
                   namespace: monitoring
+                - chart: alert-loki-bridge
+                  namespace: monitoring
                 - chart: postgres-gateway
                   namespace: jit-hub
                 - chart: ops
@@ -36,7 +38,7 @@ spec:
       source:
         repoURL: 'https://github.com/hacksungboo/jit-hub-infra'
         #targetRevision: HEAD
-        targetRevision: feat/ci-cd-harbor # ci/cd 테스트용 (26.07.20 1930)
+        targetRevision: test/total # 통합 테스트용 (26.07.24 1600)
         # charts/cloudflared, charts/monitoring-stack, charts/ops에 각각 대응
         path: charts/{{chart}}
         helm:

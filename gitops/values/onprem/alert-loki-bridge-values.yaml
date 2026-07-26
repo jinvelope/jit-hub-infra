@@ -1,0 +1,3 @@
+# gitops/values/onprem/alert-loki-bridge-values.yaml
+# 온프렘 Loki/Alertmanager와 같은 클러스터에 있어야 하므로 onprem에서만 활성화
+enabled: true

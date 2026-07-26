@@ -4,6 +4,9 @@ metadata:
   name: jit-hub-app-appset
   namespace: argocd
 spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
   generators:
     - clusters:
         # environment 레이블이 등록된 클러스터들(eks-a, eks-b, onprem)을 선택
@@ -17,22 +20,22 @@ spec:
                 - onprem
   template:
     metadata:
-      name: '{{name}}-jit-hub-app'
+      name: '{{ .name }}-jit-hub-app'
     spec:
       project: jit-hub-project
       source:
         repoURL: 'https://github.com/hacksungboo/jit-hub-infra'
         #targetRevision: HEAD
-        targetRevision: feat/ci-cd-harbor # ci/cd 테스트용 (26.07.20 1930)
+        targetRevision: test/total # 통합 테스트용 (26.07.24 1600)
         path: charts/jit-hub-app
         helm:
           valueFiles:
             # 1단계: 공통 values 우선 적용
             - ../../gitops/values/common/jit-hub-common.yaml
             # 2단계: 클러스터 레이블에 맞게 특정 환경 values 적용 (오버라이드)
-            - ../../gitops/values/{{metadata.labels.environment}}/jit-hub-values.yaml
+            - ../../gitops/values/{{ index .metadata.labels "environment" }}/jit-hub-values.yaml
       destination:
-        server: '{{server}}'
+        server: '{{ .server }}'
         namespace: jit-hub
       syncPolicy:
         automated:
@@ -40,3 +43,43 @@ spec:
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
+          # ignoreDifferences를 sync 시에도 존중하여 다른 변경의 sync가
+          # EKS-B 애플리케이션 replica를 다시 0으로 덮어쓰지 않게 합니다.
+          - RespectIgnoreDifferences=true
+  # EKS-B는 Cold Standby values(replicas=0)를 유지하면서 failover 스크립트가
+  # 런타임에 1로 조정하므로, 해당 Application에서만 replica 차이를 무시합니다.
+  templatePatch: |
+    {{- if eq (index .metadata.labels "environment") "eks-b" }}
+    spec:
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          name: gateway-service
+          namespace: jit-hub
+          jsonPointers:
+            - /spec/replicas
+        - group: apps
+          kind: Deployment
+          name: auth-service
+          namespace: jit-hub
+          jsonPointers:
+            - /spec/replicas
+        - group: apps
+          kind: Deployment
+          name: weather-service
+          namespace: jit-hub
+          jsonPointers:
+            - /spec/replicas
+        - group: apps
+          kind: Deployment
+          name: traffic-service
+          namespace: jit-hub
+          jsonPointers:
+            - /spec/replicas
+        - group: apps
+          kind: Deployment
+          name: tourist-service
+          namespace: jit-hub
+          jsonPointers:
+            - /spec/replicas
+    {{- end }}

@@ -1,6 +1,7 @@
 
 # NodePool: "어떤 스펙의 노드를 만들지" 정의
 # v1beta1에서 NodePool은 cluster-scoped라 namespace 없음
+{{- if .Values.karpenter.enabled }} 
 apiVersion: karpenter.sh/v1beta1
 kind: NodePool
 metadata:
@@ -41,8 +42,12 @@ spec:
     cpu: {{ .Values.karpenter.limits.cpu | quote }}
     memory: {{ .Values.karpenter.limits.memory }}
 
-  # 노드 정리 정책
+   # 노드 정리 정책
   disruption:
     consolidationPolicy: {{ .Values.karpenter.disruption.consolidationPolicy }}
+    {{- if eq .Values.karpenter.disruption.consolidationPolicy "WhenEmpty" }}
+    # consolidateAfter는 WhenEmpty에서만 유효 (WhenUnderutilized와 함께 쓰면 검증 실패)
     consolidateAfter: {{ .Values.karpenter.disruption.consolidateAfter }}
+    {{- end }}
     expireAfter: {{ .Values.karpenter.disruption.expireAfter }}
+{{- end }}

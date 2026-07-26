@@ -67,7 +67,7 @@ APP_HEALTH_PATH="${APP_HEALTH_PATH:-/health}"
 APP_LABEL_SELECTOR="${APP_LABEL_SELECTOR:-app=gateway}"
 
 # 반드시 실제 외부 도메인으로 변경
-EXTERNAL_HEALTH_URL="${EXTERNAL_HEALTH_URL:-https://zeoxixx.cloud/health}"
+EXTERNAL_HEALTH_URL="${EXTERNAL_HEALTH_URL:-https://ccmall.shop/health}"
 
 
 # =========================================================
@@ -514,6 +514,9 @@ check_internal_health() {
       --silent \
       --show-error \
       --fail \
+      --retry "$HEALTH_RETRY" \
+      --retry-delay "$HEALTH_INTERVAL" \
+      --retry-all-errors \
       --max-time "$HEALTH_TIMEOUT" \
       "http://${APP_SERVICE}:${APP_PORT}${APP_HEALTH_PATH}"
 }

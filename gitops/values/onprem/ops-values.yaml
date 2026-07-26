@@ -5,3 +5,6 @@ karpenter:
   enabled: false # EKS 전용이므로 비활성화
 customScheduler:
   enabled: false # 고효율 노드 배치용 Custom GreenOps Scheduler 비활성화
+
+serviceMonitor:
+  enabled: false

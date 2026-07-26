@@ -1,25 +1,29 @@
-
+{{- if .Values.keda.enabled }}
 apiVersion: keda.sh/v1alpha1
-kind: ScaledObject 
+kind: ScaledObject
 metadata:
-  name: traffic-service-scaler 
-  namespace: default
+  name: traffic-service-scaler
+  namespace: {{ .Values.keda.namespace | default "jit-hub" }}
 
 spec:
   scaleTargetRef:
-    name: traffic-service     # jit-hub-app의 Deployment 이름과 일치하여 합니다.
+    name: traffic-service   # jit-hub-app의 Deployment 이름과 일치해야 합니다.
     kind: Deployment
-  minReplicaCount: 1          # 최소 복제본
-  maxReplicaCount: 5          # 최대 복제본 
-  cooldownPeriod: 300         # 확장 후 냉각 기간 
+  minReplicaCount: {{ .Values.keda.minReplicaCount | default 1 }}
+  maxReplicaCount: {{ .Values.keda.maxReplicaCount | default 5 }}
+  cooldownPeriod: {{ .Values.keda.cooldownPeriod | default 300 }}
+  # Prometheus 연결 실패 시 최소 가용성 유지
+  fallback:
+    failureThreshold: {{ .Values.keda.fallback.failureThreshold | default 3 }}
+    replicas: {{ .Values.keda.fallback.replicas | default 3 }}
 
   triggers:
   - type: prometheus
     metadata:
-    # kube-prometheus-stack 차트의 Prometheus 서비스명
-      serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090     
+      # ArgoCD 배포 시 릴리스명이 접두사로 붙어 클러스터마다 이름이 달라짐
+      serverAddress: {{ .Values.keda.serverAddress }}
       metricName: traffic_request_rate
-      # 전체 요청 수를 기록하는 메트릭에서 traffic-service 라는 앱의 1분 동안의 데이터만 가져오기
-      query: |                            
-        sum(rate(http_requests_total{job="traffic-service"}[1m]))    
-      threshold: "10"        # 임계값 
+      query: |
+        sum(rate(http_requests_total{job="traffic-service"}[1m]))
+      threshold: {{ .Values.keda.threshold | default "10" | quote }}
+{{- end }}

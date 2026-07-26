@@ -1,8 +1,7 @@
 enabled: false
 replicaCount: 1
 
-# 단일 replica가 하나의 Tailscale state Secret을 사용하므로, 테스트 중에는
-# 이전 Pod가 완전히 종료된 뒤 새 Pod를 만드는 Recreate 전략을 사용합니다.
+# 단일 PgBouncer replica를 교체할 때 기존 Pod가 종료된 뒤 새 Pod를 시작합니다.
 strategy:
   type: Recreate
 
@@ -35,16 +34,5 @@ pgbouncer:
     - name: tourist_db
       host: 172.16.8.50
       port: 5432
-
-tailscale:
-  image: tailscale/tailscale:latest
-  authKeySecret:
-    name: postgres-gateway-tailscale-auth
-    key: TS_AUTHKEY
-  stateSecret: postgres-gateway-tailscale-state
-  extraArgs: "--accept-routes --netfilter-mode=off --hostname=postgres-gateway"
-  # --accept-routes가 수락한 EKS 자체 subnet route가 Pod의 로컬 통신을
-  # 가로채지 않도록, 이 대역은 Pod의 main routing table을 먼저 조회합니다.
-  localCIDRs: []
 
 resources: {}

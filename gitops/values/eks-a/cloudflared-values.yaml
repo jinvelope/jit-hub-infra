@@ -3,5 +3,5 @@ replicaCount: 1 # 평시
 tunnelId: "xxxx-xxxx-xxxx-xxxx"
 credentialsSecret: "cloudflared-creds"
 ingress:
-  - hostname: "leechs.shop"
+  - hostname: "ccmall.shop"
     service: http://gateway-service.jit-hub.svc.cluster.local:80

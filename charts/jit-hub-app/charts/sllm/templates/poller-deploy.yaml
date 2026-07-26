@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sllm-poller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sllm-poller
+  template:
+    metadata:
+      labels:
+        app: sllm-poller
+    spec:
+      containers:
+      - name: sllm-poller
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        command: ["python", "-m", "app.poller"]
+        env:
+        - name: JITHUB_LOCATION
+          value: {{ .Values.location | default "EKS" | quote }}
+        - name: LOKI_MODE
+          value: {{ .Values.loki.mode | default "mock" | quote }}
+        - name: LOKI_URL
+          value: {{ .Values.loki.url | default "http://onprem-monitoring-stack-loki:3100" | quote }}
+        - name: LOKI_QUERY
+          value: {{ .Values.loki.query | default "{cluster=~\".+\"}" | quote }}
+        - name: ANALYZE_API_URL
+          value: "http://sllm-service:{{ .Values.service.port }}/analyze"

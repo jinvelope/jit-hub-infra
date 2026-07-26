@@ -1,0 +1,11 @@
+# =============================================================================
+# terraform/aws/envs/personal-test/lambda_notify/terraform.tfvars.example
+#
+# 실제 사용 시 이 파일을 terraform.tfvars 로 복사한 뒤 값을 채우세요.
+#   cp terraform.tfvars.example terraform.tfvars
+# terraform.tfvars는 .gitignore에 이미 포함되어 있음 (커밋 금지)
+# =============================================================================
+
+slack_webhook_url = "<SLACK_INCOMING_WEBHOOK_URL>"
+
+# aws_region = "ap-northeast-2"  # 기본값과 같으면 생략 가능

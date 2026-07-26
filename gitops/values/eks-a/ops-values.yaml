@@ -4,15 +4,17 @@ clusterName: eks-a
 
 keda:
   enabled: true
+  namespace: jit-hub                 # ScaledObject 생성 위치 (앱과 동일해야 함)
   minReplicaCount: 3
   maxReplicaCount: 10
-  triggers:
-    - type: prometheus
-      metadata:
-        serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
-        metricName: http_requests_total
-        query: sum(rate(http_requests_total[2m]))
-        threshold: '50'
+  cooldownPeriod: 300
+  threshold: '50'
+  # ArgoCD 배포 시 릴리스명이 접두사로 붙어 클러스터마다 이름이 달라짐
+  serverAddress: http://eks-a-monitoring-stack-kub-prometheus.monitoring.svc.cluster.local:9090
+  fallback:
+    failureThreshold: 3
+    replicas: 3
+
 
 karpenter:
   enabled: true
@@ -25,8 +27,8 @@ karpenter:
 
   instanceTypes:   # 인스턴스 type
     - t3.small     # cpu 2, 2GB
-    - t3.medium    # cpu 2, 4GB
-    - t3.large     # cpu 2, 8GB
+    #- t3.medium    # cpu 2, 4GB
+    #- t3.large     # cpu 2, 8GB
 
   capacityTypes:   # 인스턴스 유형
     - on-demand
@@ -37,11 +39,10 @@ karpenter:
 
   # Node 최적화 (비용 절감)
   disruption:
-    # WhenEmpty        : Pod 없는 노드만 정리 (안전)
-    # WhenUnderutilized: 사용률 낮으면 Pod 몰아서 노드 줄임 (공격적)
-    consolidationPolicy: WhenEmpty
-    # 빈 상태로 이만큼 지나면 종료
-    consolidateAfter: 30s
+    # WhenEmpty        : Pod 없는 노드만 정리 (안전하나 축소가 거의 안 일어남)
+    # WhenUnderutilized: 사용률 낮으면 Pod을 몰아서 노드 수를 줄임 (FinOps 관점 유리)
+    consolidationPolicy: WhenUnderutilized
+    # consolidateAfter는 WhenEmpty 전용이라 제거
     # 노드 최대 수명 (생성 후 이만큼 지나면 무조건 교체)
     expireAfter: 720h
 
@@ -51,3 +52,15 @@ karpenter:
 
 customScheduler:
   enabled: true
+
+serviceMonitor:
+  enabled: true
+  # kube-prometheus-stack 릴리스명 (클러스터마다 다름)
+  releaseLabel: eks-a-monitoring-stack
+  appLabels:
+    - weather
+    - traffic
+    - tourist
+    - auth
+  portName: http
+  interval: 15s

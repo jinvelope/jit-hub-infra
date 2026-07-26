@@ -1,0 +1,11 @@
+tailscale_auth_key = ""
+
+
+cloudflare_api_token  = ""
+cloudflare_zone_id    = ""
+cloudflare_account_id = ""
+domain_name           = ""
+
+harbor_robot_user = ""
+harbor_robot_pull_token = ""
+harbor_registry_server = ""

@@ -4,14 +4,3 @@ replicaCount: 1
 # 임시 진단: Tailscale egress가 확인된 10.0.1.0/24 (ap-northeast-2a) 노드에 고정
 nodeSelector:
   topology.kubernetes.io/zone: ap-northeast-2a
-
-tailscale:
-  # PgBouncer와 같은 Pod network namespace를 공유하므로 kubelet/Service 트래픽을
-  # 방해하지 않도록 Tailscale의 iptables 관리 기능을 비활성화한다.
-  # Mgmt가 광고하는 172.16.8.0/24 route를 정상 수락한다.
-  extraArgs: "--reset --accept-routes --netfilter-mode=off --hostname=postgres-gateway"
-  # 기존 EKS subnet router가 광고하는 대역은 tailscale table 대신 Pod의
-  # 기본 main table을 먼저 조회한다. 규칙은 이 Gateway Pod 안에만 적용된다.
-  localCIDRs:
-    - "10.0.0.0/16"
-    - "172.20.0.0/16"

@@ -4,13 +4,11 @@
 ingressRule:
   namespace: "jit-hub"
   host: "ccmall.shop" # 필요시 eks-a 전용 도메인으로 변경 가능
-
 gateway:
   replicaCount: 1
   image:
     repository: "harbor.ccmall.shop/jit-hub/jit-hub-gateway"
     tag: "seed"
-
 auth:
   replicaCount: 1
   image:
@@ -19,7 +17,6 @@ auth:
   db:
     enabled: false
     host: "postgres-gateway"
-
 weather:
   replicaCount: 1
   image:
@@ -28,7 +25,6 @@ weather:
   db:
     enabled: false
     host: "postgres-gateway"
-
 traffic:
   replicaCount: 1
   image:
@@ -37,7 +33,6 @@ traffic:
   db:
     enabled: false
     host: "postgres-gateway"
-
 tourist:
   replicaCount: 1
   image:
@@ -46,3 +41,7 @@ tourist:
   db:
     enabled: false
     host: "postgres-gateway"
+
+# sLLM 분석 파이프라인(FastAPI+Ollama+poller)은 onprem에만 배포 (7/15 팀 결정)
+sllm:
+  enabled: false

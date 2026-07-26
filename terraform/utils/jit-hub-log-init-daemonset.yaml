@@ -1,0 +1,76 @@
+# utils/jithub-log-init-daemonset.yaml
+#
+# promtail이 /var/log/pods/jithub_log.log 를 tail 하기 전에,
+# 해당 파일이 모든 EKS 워커 노드(Karpenter가 나중에 만드는 노드 포함)에
+# 미리 존재하도록 만드는 "초기화 전용" DaemonSet.
+#
+# 동작:
+#   - 파일이 없으면 새로 만들고 "hello from <노드 IP>" 를 딱 한 줄 적는다.
+#   - 파일이 이미 있으면 아무것도 하지 않는다 (재시작/재배포 시 중복 append 방지).
+#   - 한 번 쓰고 나면 컨테이너는 그대로 sleep 상태로 유지되며,
+#     Terraform의 `kubectl rollout status`가 이 DaemonSet의 Ready 상태를 확인하는 용도로 쓰인다.
+#
+# jithub-log-writer-daemonset.yaml(테스트용 로그 주입 파일)과는 별개이며,
+# promtail 설정(values.yaml, scrapeConfigs)은 이 파일과 무관하게 그대로 둔다.
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: jithub-log-init
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: jithub-log-init
+  template:
+    metadata:
+      labels:
+        app: jithub-log-init
+    spec:
+      # tailscale-router와 동일하게 모든 taint를 허용 → Karpenter 신규 노드에도 즉시 스케줄
+      tolerations:
+        - operator: Exists
+      containers:
+        - name: init-writer
+          image: busybox:1.36
+          env:
+            # Downward API로 노드(Pod가 붙은 호스트)의 IP를 주입
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              LOG_FILE=/var/log/jithub/jithub_log.log
+              if [ ! -f "$LOG_FILE" ]; then
+                mkdir -p "$(dirname "$LOG_FILE")"
+                echo "hello from ${NODE_IP}" > "$LOG_FILE"
+              fi
+              # kubectl rollout status가 Ready를 확인할 수 있도록 컨테이너는 계속 살아있는다.
+              sleep infinity
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - test -f /var/log/jithub/jithub_log.log
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
+      volumes:
+        - name: varlog
+          hostPath:
+            path: /var/log
+            type: DirectoryOrCreate

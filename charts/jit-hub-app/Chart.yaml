@@ -25,3 +25,7 @@ dependencies:
     version: 0.1.0
     repository: "file://charts/tourist"
     condition: tourist.enabled
+  - name: sllm
+    version: 0.1.0
+    repository: "file://charts/sllm"
+    condition: sllm.enabled

@@ -9,10 +9,10 @@
 # --- Cloudflare (기존 프로젝트 tfvars 와 동일 값 사용 가능) ---
 cloudflare_api_token  = "<CLOUDFLARE_API_TOKEN>"   # Tunnel + DNS 편집 권한
 cloudflare_account_id = "<CLOUDFLARE_ACCOUNT_ID>"
-cloudflare_zone_id    = "<CCMALL_SHOP_ZONE_ID>"    # ccmall.shop 의 Zone ID
+cloudflare_zone_id    = "<LEECHS_SHOP_ZONE_ID>"    # ccmall.shop 의 Zone ID
 
 # --- 도메인 ---
-domain_name = "ccmall.shop"
+domain_name = "leechs.shop"
 
 # --- 온프레미스 클러스터 (connector 배포 대상) ---
 # 기본값과 같으면 생략 가능

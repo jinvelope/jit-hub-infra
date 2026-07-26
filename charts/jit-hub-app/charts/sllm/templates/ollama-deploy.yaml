@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      containers:
+      - name: ollama
+        image: {{ .Values.ollama.image | default "ollama/ollama:0.31.2" | quote }}
+        ports:
+        - containerPort: 11434
+        resources:
+          requests:
+            cpu: {{ .Values.ollama.resources.requests.cpu | default "1" | quote }}
+            memory: {{ .Values.ollama.resources.requests.memory | default "2Gi" | quote }}
+          limits:
+            cpu: {{ .Values.ollama.resources.limits.cpu | default "2" | quote }}
+            memory: {{ .Values.ollama.resources.limits.memory | default "4Gi" | quote }}

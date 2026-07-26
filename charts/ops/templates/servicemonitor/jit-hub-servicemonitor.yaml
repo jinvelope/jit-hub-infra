@@ -1,0 +1,30 @@
+{{- if .Values.serviceMonitor.enabled }}
+# ServiceMonitor: Prometheus가 앱의 /metrics를 수집하도록 지정
+# 이게 없으면 KEDA가 참조할 http_requests_total 지표가 수집되지 않음
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: jit-hub-services
+  namespace: {{ .Values.keda.namespace | default "jit-hub" }}
+  labels:
+    # kube-prometheus-stack이 이 라벨로 ServiceMonitor를 탐색함
+    # 릴리스명이 클러스터마다 달라 values로 분리
+    release: {{ .Values.serviceMonitor.releaseLabel }}
+
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.keda.namespace | default "jit-hub" }}
+
+  # app 레이블이 아래 목록에 포함된 Service를 수집 대상으로 함
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: {{ .Values.serviceMonitor.appLabels | toJson }}
+
+  endpoints:
+    - port: {{ .Values.serviceMonitor.portName | default "http" }}
+      path: /metrics
+      interval: {{ .Values.serviceMonitor.interval | default "15s" }}
+{{- end }}

@@ -1,0 +1,23 @@
+# onprem에서만 실제 배포 (Loki가 onprem에만 있어 eks-a/eks-b에서는 무의미)
+# 클러스터별 gitops/values/*/alert-loki-bridge-values.yaml 에서 오버라이드
+enabled: true
+
+replicaCount: 1
+
+image:
+  repository: harbor.ccmall.shop/jit-hub/alert-loki-bridge
+  tag: seed
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: harbor-pull
+
+service:
+  port: 8080
+  targetPort: 8000
+
+lokiPushUrl: "http://onprem-monitoring-stack-loki:3100/loki/api/v1/push"
+
+# PrometheusRule 활성화 여부 (kube-prometheus-stack CRD 필요)
+prometheusRule:
+  enabled: true

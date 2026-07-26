@@ -4,13 +4,11 @@
 ingressRule:
   namespace: "jit-hub"
   host: "ccmall.shop"
-
 gateway:
   replicaCount: 1
   image:
     repository: "harbor.ccmall.shop/jit-hub/jit-hub-gateway"
     tag: "seed"
-
 auth:
   replicaCount: 1
   image:
@@ -26,7 +24,6 @@ auth:
       nfs:
         server: "172.16.8.203"
         path: "/nfs/shared/jithub-authdb"
-
 weather:
   replicaCount: 1
   image:
@@ -42,7 +39,6 @@ weather:
       nfs:
         server: "172.16.8.203"
         path: "/nfs/shared/jithub-weatherdb"
-
 traffic:
   replicaCount: 1
   image:
@@ -58,7 +54,6 @@ traffic:
       nfs:
         server: "172.16.8.203"
         path: "/nfs/shared/jithub-trafficdb"
-
 tourist:
   replicaCount: 1
   image:
@@ -74,3 +69,9 @@ tourist:
       nfs:
         server: "172.16.8.203"
         path: "/nfs/shared/jithub-touristdb"
+
+sllm:
+  enabled: false # sLLM 분석 파이프라인은 onprem에서만 활성화 (7/15 팀 결정)
+  loki:
+    mode: live
+    url: "http://onprem-monitoring-stack-loki:3100"

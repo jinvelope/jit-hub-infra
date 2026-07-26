@@ -11,6 +11,11 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 2.30"
     }
+
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.14"
+    }
   }
 }
 
@@ -47,7 +52,7 @@ provider "kubernetes" {
       data.terraform_remote_state.eks.outputs.cluster_name,
       "--region",
       "ap-northeast-1"
-    ]    
+    ]
   }
 }
 
@@ -61,9 +66,35 @@ data "terraform_remote_state" "eks" {
 
 }
 
+data "terraform_remote_state" "onprem" {
+  backend = "local"
+
+  config = {
+    path = "../../../../onprem/01-onprem-platform/terraform.tfstate"
+  }
+}
+
 # 온프레미스(VMware k8s) 클러스터 조작용 프로바이더 별칭 정의
 provider "kubernetes" {
   alias          = "onprem"
   config_path    = "~/.kube/config"
   config_context = "kubernetes-admin@kubernetes"
+}
+
+provider "helm" {
+  kubernetes {
+    host = data.terraform_remote_state.eks.outputs.cluster_endpoint
+    cluster_ca_certificate = base64decode(
+      data.terraform_remote_state.eks.outputs.cluster_certificate_authority_data
+    )
+    exec {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      command     = "aws"
+      args = [
+        "eks", "get-token",
+        "--cluster-name", data.terraform_remote_state.eks.outputs.cluster_name,
+        "--region", "ap-northeast-1"
+      ]
+    }
+  }
 }

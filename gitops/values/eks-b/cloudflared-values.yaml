@@ -3,5 +3,5 @@ replicaCount: 0 # 평상시 Cold Standby 상태로 터널 비활성화 (DR Failo
 tunnelId: "xxxx-xxxx-xxxx-xxxx"
 credentialsSecret: "cloudflared-creds"
 ingress:
-  - hostname: "jit-hub.domain.com"
-    service: http://nginx-service.jit-hub.svc.cluster.local:80
+  - hostname: "ccmall.shop"
+    service: http://gateway-service.jit-hub.svc.cluster.local:80

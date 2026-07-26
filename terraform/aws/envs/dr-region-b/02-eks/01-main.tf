@@ -29,9 +29,9 @@ module "eks" {
       #instance_types = ["t3.medium"]
       instance_types = ["t3.small"]
       ami_type       = "AL2_x86_64"
-      min_size       = 1    # 최소노드 수
-      max_size       = 4    # 최대노드 수
-      desired_size   = 2    # 기본노드 수
+      min_size       = 4    # 최소노드 수
+      max_size       = 6    # 최대노드 수
+      desired_size   = 5    # 기본노드 수
 
     #   iam_role_additional_policies = {
     #     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"

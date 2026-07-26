@@ -15,13 +15,13 @@ variable "cloudflare_account_id" {
 }
 
 variable "cloudflare_zone_id" {
-  description = "Cloudflare Zone ID (ccmall.shop 의 Zone ID)"
+  description = "Cloudflare Zone ID (leechs.shop 의 Zone ID)"
   type        = string
 }
 
 # --- 도메인 --------------------------------------------------------------------
 variable "domain_name" {
-  description = "루트 도메인 (예: ccmall.shop). harbor 서브도메인이 이 위에 생성됨 → harbor.ccmall.shop"
+  description = "루트 도메인 (예: leechs.shop). harbor 서브도메인이 이 위에 생성됨 → harbor.leechs.shop"
   type        = string
 }
 
@@ -46,7 +46,7 @@ variable "harbor_private_endpoint" {
 }
 
 variable "harbor_subdomain" {
-  description = "Harbor 서브도메인 레코드 이름 (harbor → harbor.ccmall.shop)"
+  description = "Harbor 서브도메인 레코드 이름 (harbor → harbor.leechs.shop)"
   type        = string
   default     = "harbor"
 }
