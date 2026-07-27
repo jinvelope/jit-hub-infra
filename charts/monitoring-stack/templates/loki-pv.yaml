@@ -10,6 +10,12 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: ""
+  # Loki singleBinary가 자동 생성하는 PVC(storage-<release>-loki-0)와
+  # 명시적으로 매칭시킨다. Loki 차트가 loki.singleBinary.persistence.existingClaim을
+  # 지원하지 않아, storageClassName만으로는 다른 PVC가 먼저 이 PV를 가져갈 수 있다.
+  claimRef:
+    name: storage-{{ .Release.Name }}-loki-0
+    namespace: {{ .Release.Namespace }}
   nfs:
     server: {{ .Values.loki.nfs.server }}
     path: {{ .Values.loki.nfs.path }}

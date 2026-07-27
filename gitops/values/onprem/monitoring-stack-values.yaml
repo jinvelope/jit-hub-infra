@@ -70,7 +70,10 @@ loki:
     replicas: 1
     persistence:
       enabled: true
-      existingClaim: loki-pvc
+      # existingClaim은 이 Loki 차트(6.6.2) singleBinary StatefulSet에서 실제로
+      # 참조되지 않는다 (죽은 옵션). storageClass: "-"로 동적 프로비저닝을 끄고,
+      # charts/monitoring-stack/templates/loki-pv.yaml의 claimRef로 NFS PV와 매칭시킨다.
+      storageClass: "-"
   nfs:
     enabled: true
     server: "172.16.8.203"        # NFS 서버 IP (실제 IP로 변경 필요)
