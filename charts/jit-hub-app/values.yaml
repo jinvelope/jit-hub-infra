@@ -13,7 +13,7 @@ auth:
         path: "/nfs/shared/jithub-authdb"
   enabled: true
   image:
-    repository: harbor.ccmall.shop/jit-hub/auth-service # 개인 도메인 수정 필요
+    repository: harbor.unzipp.cloud/jit-hub/auth-service # 개인 도메인 수정 필요
     tag: seed
   replicaCount: 1
   service:
@@ -21,13 +21,13 @@ auth:
 gateway:
   enabled: true
   image:
-    repository: harbor.ccmall.shop/jit-hub/jit-hub-gateway # 개인 도메인 수정 필요
+    repository: harbor.unzipp.cloud/jit-hub/jit-hub-gateway # 개인 도메인 수정 필요
     tag: seed
   replicaCount: 1
   service:
     port: 80
 ingressRule:
-  host: ccmall.shop
+  host: unzipp.cloud
   namespace: jit-hub
 tourist:
   db:
@@ -44,7 +44,7 @@ tourist:
         path: "/nfs/shared/jithub-touristdb"
   enabled: true
   image:
-    repository: harbor.ccmall.shop/jit-hub/tourist-service # 개인 도메인 수정 필요
+    repository: harbor.unzipp.cloud/jit-hub/tourist-service # 개인 도메인 수정 필요
     tag: seed
   replicaCount: 1
   service:
@@ -64,7 +64,7 @@ traffic:
         path: "/nfs/shared/jithub-trafficdb"
   enabled: true
   image:
-    repository: harbor.ccmall.shop/jit-hub/traffic-service # 개인 도메인 수정 필요
+    repository: harbor.unzipp.cloud/jit-hub/traffic-service # 개인 도메인 수정 필요
     tag: seed
   replicaCount: 1
   service:
@@ -84,7 +84,7 @@ weather:
         path: "/nfs/shared/jithub-weatherdb"
   enabled: true
   image:
-    repository: harbor.ccmall.shop/jit-hub/weather-service # 개인 도메인 수정 필요
+    repository: harbor.unzipp.cloud/jit-hub/weather-service # 개인 도메인 수정 필요
     tag: seed
   replicaCount: 1
   service:

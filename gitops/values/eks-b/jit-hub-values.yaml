@@ -3,16 +3,16 @@
 
 ingressRule:
   namespace: "jit-hub"
-  host: "ccmall.shop" # 필요시 eks-a 전용 도메인으로 변경 가능
+  host: "unzipp.cloud" # 필요시 eks-a 전용 도메인으로 변경 가능
 gateway:
   replicaCount: 0
   image:
-    repository: "harbor.ccmall.shop/jit-hub/jit-hub-gateway"
+    repository: "harbor.unzipp.cloud/jit-hub/jit-hub-gateway"
     tag: "seed"
 auth:
   replicaCount: 0
   image:
-    repository: "harbor.ccmall.shop/jit-hub/auth-service"
+    repository: "harbor.unzipp.cloud/jit-hub/auth-service"
     tag: "seed"
   db:
     enabled: false
@@ -20,7 +20,7 @@ auth:
 weather:
   replicaCount: 0
   image:
-    repository: "harbor.ccmall.shop/jit-hub/weather-service"
+    repository: "harbor.unzipp.cloud/jit-hub/weather-service"
     tag: "seed"
   db:
     enabled: false
@@ -28,7 +28,7 @@ weather:
 traffic:
   replicaCount: 0
   image:
-    repository: "harbor.ccmall.shop/jit-hub/traffic-service"
+    repository: "harbor.unzipp.cloud/jit-hub/traffic-service"
     tag: "seed"
   db:
     enabled: false
@@ -36,7 +36,7 @@ traffic:
 tourist:
   replicaCount: 0
   image:
-    repository: "harbor.ccmall.shop/jit-hub/tourist-service"
+    repository: "harbor.unzipp.cloud/jit-hub/tourist-service"
     tag: "seed"
   db:
     enabled: false

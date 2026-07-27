@@ -3,5 +3,5 @@ replicaCount: 0
 tunnelId: "xxxx-xxxx-xxxx-xxxx"
 credentialsSecret: "cloudflared-creds"
 ingress:
-  - hostname: "ccmall.shop" # 도메인
+  - hostname: "unzipp.cloud" # 도메인
     service: http://gateway-service.jit-hub.svc.cluster.local:80

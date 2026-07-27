@@ -3,7 +3,7 @@
 # Harbor 전용 Cloudflare Tunnel (서비스 터널 jit-hub-tunnel 과 완전 분리)
 #
 # 목적:
-#   - Harbor(172.16.8.200, HTTP:80)를 harbor.ccmall.shop (HTTPS) 로 공개 노출
+#   - Harbor(172.16.8.200, HTTP:80)를 harbor.unzipp.cloud (HTTPS) 로 공개 노출
 #   - 이미지 pull 경로를 단일 도메인으로 통일 (eks-a / eks-b / onprem 공용)
 #   - DR 스위칭용 서비스 터널과 state / 터널 / connector 를 모두 분리
 #

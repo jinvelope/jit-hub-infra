@@ -119,6 +119,6 @@ ingestIngress:
   # 전환하면서 더 이상 쓰이지 않음. ingress-nginx가 없는 클러스터에서는 이 Ingress가
   # ADDRESS를 못 받아 ArgoCD sync를 막으므로 비활성화.
   enabled: false
-  domain: ccmall.shop # 도메인
+  domain: unzipp.cloud # 도메인
   prometheusServiceName: onprem-monitoring-stack-ku-prometheus
   lokiServiceName: onprem-monitoring-stack-loki
