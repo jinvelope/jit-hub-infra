@@ -5,7 +5,7 @@ enabled: true
 replicaCount: 1
 
 image:
-  repository: harbor.ccmall.shop/jit-hub/alert-loki-bridge
+  repository: harbor.unzipp.cloud/jit-hub/alert-loki-bridge
   tag: seed
   pullPolicy: IfNotPresent
 
