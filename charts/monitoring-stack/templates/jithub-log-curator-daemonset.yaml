@@ -35,28 +35,42 @@ spec:
             - /bin/sh
             - -c
             - |
-              set -eu
+              set -u
               OUT=/curated/jithub_log.log
               mkdir -p "$(dirname "$OUT")"
               touch "$OUT"
+              mkdir -p /tmp/pids
 
               echo "[curator] watching /var/log/pods for apps: $TARGET_APPS (pattern: $FILTER_PATTERN)"
 
-              # 대상 앱의 로그 파일이 새로 생길 때마다 tail -F를 백그라운드로 붙인다.
-              # (파드가 재기동되면 새 UID 디렉토리가 생기므로 주기적으로 재스캔)
-              declare_tailed="/tmp/tailed.list"
-              : > "$declare_tailed"
-
+              # 컨테이너 디렉토리(포드/컨테이너) 단위로 "가장 최근 번호의 .log 파일"만 tail한다.
+              # 재시작으로 0.log -> 1.log 처럼 새 파일이 생기면 기존 tail을 죽이고 새 파일로 갈아탄다.
+              # (파일 단위로 tail을 걸면 재시작 후 옛 파일만 계속 보다가 새 로그를 놓치는 문제가 있었음)
               while true; do
                 IFS=','
                 for app in $TARGET_APPS; do
-                  for f in /hostlogs/pods/jit-hub_${app}-service-*/*/*.log /hostlogs/pods/jit-hub_${app}-*/*/*.log; do
-                    [ -e "$f" ] || continue
-                    if ! grep -qxF "$f" "$declare_tailed" 2>/dev/null; then
-                      echo "$f" >> "$declare_tailed"
-                      ( tail -n0 -F "$f" 2>/dev/null | grep --line-buffered -Ei "$FILTER_PATTERN" | while IFS= read -r line; do
+                  for dir in /hostlogs/pods/jit-hub_${app}-service-*/*/; do
+                    [ -d "$dir" ] || continue
+                    latest=$(ls "$dir" 2>/dev/null | grep -E '^[0-9]+\.log$' | sort -n | tail -1)
+                    [ -n "$latest" ] || continue
+                    fullpath="${dir}${latest}"
+
+                    key=$(echo "$dir" | tr -c 'a-zA-Z0-9' '_')
+                    pidfile="/tmp/pids/${key}.pid"
+                    curfile="/tmp/pids/${key}.cur"
+
+                    prev=""
+                    [ -f "$curfile" ] && prev=$(cat "$curfile")
+
+                    if [ "$prev" != "$fullpath" ]; then
+                      if [ -f "$pidfile" ]; then
+                        kill "$(cat "$pidfile")" 2>/dev/null || true
+                      fi
+                      echo "$fullpath" > "$curfile"
+                      ( tail -n0 -F "$fullpath" 2>/dev/null | grep --line-buffered -Ei "$FILTER_PATTERN" | while IFS= read -r line; do
                           printf '%s [node=%s] [app=%s] %s\n' "$(date -Iseconds)" "$NODE_NAME" "$app" "$line" >> "$OUT"
                         done ) &
+                      echo $! > "$pidfile"
                     fi
                   done
                 done
