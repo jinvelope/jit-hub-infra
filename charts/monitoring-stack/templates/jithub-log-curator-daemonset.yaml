@@ -62,7 +62,14 @@ spec:
                     prev=""
                     [ -f "$curfile" ] && prev=$(cat "$curfile")
 
-                    if [ "$prev" != "$fullpath" ]; then
+                    alive=0
+                    if [ -f "$pidfile" ] && kill -0 "$(cat "$pidfile")" 2>/dev/null; then
+                      alive=1
+                    fi
+
+                    # 파일이 바뀌었거나(재시작), 파일은 그대로인데 tail 프로세스가
+                    # 죽어있으면(리소스 부족 등으로) 다시 붙인다.
+                    if [ "$prev" != "$fullpath" ] || [ "$alive" = "0" ]; then
                       if [ -f "$pidfile" ]; then
                         kill "$(cat "$pidfile")" 2>/dev/null || true
                       fi
@@ -91,11 +98,11 @@ spec:
               mountPath: /curated
           resources:
             requests:
-              cpu: 20m
-              memory: 32Mi
+              cpu: 30m
+              memory: 64Mi
             limits:
-              cpu: 100m
-              memory: 96Mi
+              cpu: 200m
+              memory: 256Mi
       volumes:
         - name: hostlogs
           hostPath:
