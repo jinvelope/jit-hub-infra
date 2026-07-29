@@ -1,0 +1,19 @@
+{{- if and .Values.curatedLogs .Values.curatedLogs.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jithub-curated-pv
+spec:
+  capacity:
+    storage: {{ .Values.curatedLogs.nfs.storage }}
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  claimRef:
+    name: jithub-curated-pvc
+    namespace: {{ .Release.Namespace }}
+  nfs:
+    server: {{ .Values.curatedLogs.nfs.server }}
+    path: {{ .Values.curatedLogs.nfs.path }}
+{{- end }}

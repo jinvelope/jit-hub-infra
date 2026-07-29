@@ -1,0 +1,87 @@
+{{- if and .Values.curatedLogs .Values.curatedLogs.enabled }}
+# promtail은 파일을 읽어서 Loki로 push만 할 뿐, 파일을 "새로 쓰는" 기능이 없다.
+# 그래서 "원하는 형태만 걸러서 NFS 파일에 저장"하려면 별도의 curator가 필요하다.
+# 이 DaemonSet은 /var/log/pods 에서 대상 서비스의 로그만 tail + grep으로 걸러서
+# NFS PVC(jithub-curated-pvc)의 jithub_log.log 에 append 한다.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: jithub-log-curator
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: jithub-log-curator
+  template:
+    metadata:
+      labels:
+        app: jithub-log-curator
+    spec:
+      tolerations:
+        - operator: Exists
+      containers:
+        - name: curator
+          image: busybox:1.36
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: FILTER_PATTERN
+              value: {{ .Values.curatedLogs.filterPattern | default "ERROR|WARN|CRITICAL" | quote }}
+            - name: TARGET_APPS
+              value: {{ .Values.curatedLogs.targetApps | default "auth,weather,traffic,tourist,gateway" | quote }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              OUT=/curated/jithub_log.log
+              mkdir -p "$(dirname "$OUT")"
+              touch "$OUT"
+
+              echo "[curator] watching /var/log/pods for apps: $TARGET_APPS (pattern: $FILTER_PATTERN)"
+
+              # 대상 앱의 로그 파일이 새로 생길 때마다 tail -F를 백그라운드로 붙인다.
+              # (파드가 재기동되면 새 UID 디렉토리가 생기므로 주기적으로 재스캔)
+              declare_tailed="/tmp/tailed.list"
+              : > "$declare_tailed"
+
+              while true; do
+                IFS=','
+                for app in $TARGET_APPS; do
+                  for f in /hostlogs/pods/jit-hub_${app}-service-*/*/*.log /hostlogs/pods/jit-hub_${app}-*/*/*.log; do
+                    [ -e "$f" ] || continue
+                    if ! grep -qxF "$f" "$declare_tailed" 2>/dev/null; then
+                      echo "$f" >> "$declare_tailed"
+                      ( tail -n0 -F "$f" 2>/dev/null | grep --line-buffered -Ei "$FILTER_PATTERN" | while IFS= read -r line; do
+                          printf '%s [node=%s] [app=%s] %s\n' "$(date -Iseconds)" "$NODE_NAME" "$app" "$line" >> "$OUT"
+                        done ) &
+                    fi
+                  done
+                done
+                unset IFS
+                sleep 15
+              done
+          volumeMounts:
+            - name: hostlogs
+              mountPath: /hostlogs/pods
+              readOnly: true
+            - name: curated
+              mountPath: /curated
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 96Mi
+      volumes:
+        - name: hostlogs
+          hostPath:
+            path: /var/log/pods
+            type: DirectoryOrCreate
+        - name: curated
+          persistentVolumeClaim:
+            claimName: jithub-curated-pvc
+{{- end }}

@@ -84,6 +84,19 @@ lokiLoadBalancer:
   enabled: true
   ip: 172.16.8.34
 
+# 큐레이션된 로그 전용 NFS 볼륨. jithub-log-curator DaemonSet이 대상 서비스
+# (auth/weather/traffic/tourist/gateway) 로그 중 filterPattern에 걸리는 줄만
+# 여기에 append하고, promtail은 이 파일 하나만 tail한다.
+# hostPath가 아니라 NFS라서 master/node1 어느 노드에서 로그가 나든 한 파일로 모인다.
+curatedLogs:
+  enabled: true
+  nfs:
+    server: "172.16.8.203"
+    path: "/nfs/shared/jithub-curated"
+    storage: 5Gi
+  filterPattern: "ERROR|WARN|CRITICAL"
+  targetApps: "auth,weather,traffic,tourist,gateway"
+
 promtail:
   enabled: true
   config:
@@ -93,23 +106,22 @@ promtail:
           cluster: onprem
     snippets:
       scrapeConfigs: |
-        - job_name: jithub-log-only
+        - job_name: jithub-curated
           static_configs:
             - targets:
                 - localhost
               labels:
-                job: jithub-log-only
-                __path__: /var/log/jithub/*.log
+                job: jithub-curated
+                __path__: /var/log/jithub-curated/*.log
 
   extraVolumes:
-    - name: jithub-logs
-      hostPath:
-        path: /var/log/jithub
-        type: DirectoryOrCreate
+    - name: jithub-curated
+      persistentVolumeClaim:
+        claimName: jithub-curated-pvc
 
   extraVolumeMounts:
-    - name: jithub-logs
-      mountPath: /var/log/jithub
+    - name: jithub-curated
+      mountPath: /var/log/jithub-curated
       readOnly: true
 
 
