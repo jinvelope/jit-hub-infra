@@ -74,7 +74,7 @@ spec:
                         kill "$(cat "$pidfile")" 2>/dev/null || true
                       fi
                       echo "$fullpath" > "$curfile"
-                      ( tail -n0 -F "$fullpath" 2>/dev/null | grep --line-buffered -Ei "$FILTER_PATTERN" | while IFS= read -r line; do
+                      ( tail -n0 -F "$fullpath" 2>/dev/null | grep -Ei "$FILTER_PATTERN" | while IFS= read -r line; do
                           printf '%s [node=%s] [app=%s] %s\n' "$(date -Iseconds)" "$NODE_NAME" "$app" "$line" >> "$OUT"
                         done ) &
                       echo $! > "$pidfile"
