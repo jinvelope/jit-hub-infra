@@ -67,6 +67,12 @@ spec:
             - name: hostlogs
               mountPath: /hostlogs/pods
               readOnly: true
+            # /var/log/pods/.../0.log는 실제로 이 경로 아래 파일을 가리키는 심볼릭 링크라서
+            # (Docker 컨테이너 런타임 기준), 이것도 같이 마운트해야 링크가 안 깨진다.
+            # (promtail 기본 차트도 동일하게 두 경로를 같이 마운트한다)
+            - name: dockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
             - name: curated
               mountPath: /curated
           resources:
@@ -80,6 +86,10 @@ spec:
         - name: hostlogs
           hostPath:
             path: /var/log/pods
+            type: DirectoryOrCreate
+        - name: dockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
             type: DirectoryOrCreate
         - name: curated
           persistentVolumeClaim:
