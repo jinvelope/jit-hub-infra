@@ -74,8 +74,15 @@ spec:
                         kill "$(cat "$pidfile")" 2>/dev/null || true
                       fi
                       echo "$fullpath" > "$curfile"
-                      ( tail -n0 -F "$fullpath" 2>/dev/null | grep -Ei "$FILTER_PATTERN" | while IFS= read -r line; do
-                          printf '%s [node=%s] [app=%s] %s\n' "$(date -Iseconds)" "$NODE_NAME" "$app" "$line" >> "$OUT"
+                      # busybox grep은 파이프 출력을 완전 버퍼링해서(--line-buffered 미지원),
+                      # tail|grep|while read 로 연결하면 매칭된 줄이 버퍼에 갇혀 안 나온다.
+                      # grep을 파이프에서 빼고, 읽은 줄마다 직접 매칭하는 방식으로 우회.
+                      ( tail -n0 -F "$fullpath" 2>/dev/null | while IFS= read -r line; do
+                          case "$line" in
+                            *[Ee][Rr][Rr][Oo][Rr]*|*[Ww][Aa][Rr][Nn]*|*[Cc][Rr][Ii][Tt][Ii][Cc][Aa][Ll]*)
+                              printf '%s [node=%s] [app=%s] %s\n' "$(date -Iseconds)" "$NODE_NAME" "$app" "$line" >> "$OUT"
+                              ;;
+                          esac
                         done ) &
                       echo $! > "$pidfile"
                     fi
